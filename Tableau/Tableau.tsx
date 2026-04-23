@@ -7,14 +7,33 @@ interface TableauState {
     filterDomaine: string;
     filterClient: string;
     filterName: string;
-    sortColumn: keyof Prestation | '';
+    sortColumn: keyof Prestation | null;
     sortDirection: 'asc' | 'desc';
     currentPage: number;
     pageSize: number;
     favorites: string[];
     tooltipGuid: string | null;
-    tooltipData: { Name: string; desc: string }[] | null;
+    tooltipData: JalonLivrableUi[] | null;
 }
+
+
+
+export interface JalonLivrableRaw {
+    cr9e8_date_de_fin_actualisee: string | null;
+    cr9e8_name: string;
+    cre69_livrable: boolean | null;
+    cre69_notes: string | null;
+}
+
+
+export interface JalonLivrableUi {
+    label: string;
+    date?: string;
+    isLivrable: boolean;
+    notes?: string;
+}
+
+
 
 function isPrestation(obj: unknown): obj is Prestation {
     if (!obj || typeof obj !== 'object') return false;
@@ -88,7 +107,24 @@ const getEtatIcon = (etat: string): JSX.Element => {
     }
 };
 
+
+
+
+
 export class TableauComponent extends React.Component<ITableauProps, TableauState> {
+
+    
+    private handleProjectClick = (guid: string, idPrestation: string, libPrestation: string) => {
+        // ✅ React déclenche UNE intentions
+        this.props.onProjectSelect?.({ guid, idPrestation, libPrestation });
+    };
+
+    private handleProjectFavorisClick = (guid: string, idPrestation: string, libPrestation: string) => {
+        // ✅ React déclenche UNE intentions
+        this.props.onProjectFavorisToggle?.({ guid, idPrestation, libPrestation });
+    };
+
+
     constructor(props: ITableauProps) {
         super(props);
         this.state = {
@@ -97,18 +133,25 @@ export class TableauComponent extends React.Component<ITableauProps, TableauStat
             filterDomaine: '',
             filterClient: '',
             filterName: '',
-            sortColumn: '',
+            sortColumn: null,
             sortDirection: 'asc',
             currentPage: 0,
-            pageSize: 5,
+            pageSize: props.nbItems ?? 5,
             favorites: props.favoritesDataJson ? this.parseFavoritesProp(props.favoritesDataJson) : this.loadFavorites(),
             tooltipGuid: null,
-            tooltipData: null
+            tooltipData:
+                this.parseJalonsLivrables(
+                    props.JalonsLivrables
+                )
+
         };
+        
     }
 
     handleRefresh = () => {
-        if (this.props.onAction) this.props.onAction({ type: 'refresh' });
+
+        this.props.onAction?.({ type: 'refresh' }); 
+
     };
 
     handleNavigate = (guid: string) => {
@@ -116,66 +159,33 @@ export class TableauComponent extends React.Component<ITableauProps, TableauStat
         if (this.props.onAction) this.props.onAction({ type: 'navigate', guid });
     };
 
-    parseJalons(item?: Prestation): { Name: string; desc: string }[] | null {
-        if (!item) return null;
-        const obj = item as unknown as Record<string, unknown>;
-        const candidates = [
-            'Jalons', 'JalonsLivrablesJson', 'JalonsLivrablesData', 'JalonsLivrablesList', 'JalonsLivrables', 'Livrables', 'jalons', 'livrables', 'JalonsList'
-        ];
-        for (const k of candidates) {
-            const raw = obj[k];
-            if (raw === undefined || raw === null) continue;
-            if (Array.isArray(raw)) {
-                return raw.map(r => {
-                    if (r && typeof r === 'object') {
-                        const rr = r as Record<string, unknown>;
-                        const rrTyped = rr as { Name?: unknown; name?: unknown; desc?: unknown; Desc?: unknown; date?: unknown };
-                        const nameVal = rrTyped.Name ?? rrTyped.name ?? '';
-                        const descVal = rrTyped.desc ?? rrTyped.Desc ?? rrTyped.date ?? '';
-                        const toSafeString = (v: unknown) => (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') ? String(v) : '';
-                        return { Name: toSafeString(nameVal), desc: toSafeString(descVal) };
-                    }
-                    return { Name: typeof r === 'string' || typeof r === 'number' ? String(r) : '', desc: '' };
-                });
+    
+    private parseJalonsLivrables(
+        json?: string | null
+    ): JalonLivrableUi[] | null {
+        if (!json) return null;
+
+        try {
+            const raw = JSON.parse(json) as JalonLivrableRaw[];
+
+            if (!Array.isArray(raw) || raw.length === 0) {
+                return null;
             }
-            if (typeof raw === 'string') {
-                try {
-                    const parsed = JSON.parse(raw) as unknown;
-                    if (Array.isArray(parsed)) {
-                        return parsed.map(p => {
-                            if (p && typeof p === 'object') {
-                                const pp = p as Record<string, unknown>;
-                                const ppTyped = pp as { Name?: unknown; name?: unknown; desc?: unknown; Desc?: unknown; date?: unknown };
-                                const nameVal = ppTyped.Name ?? ppTyped.name ?? '';
-                                const descVal = ppTyped.desc ?? ppTyped.Desc ?? ppTyped.date ?? '';
-                                const toSafeString = (v: unknown) => (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean') ? String(v) : '';
-                                return { Name: toSafeString(nameVal), desc: toSafeString(descVal) };
-                            }
-                            return { Name: typeof p === 'string' || typeof p === 'number' ? String(p) : '', desc: '' };
-                        });
-                    }
-                } catch {
-                    // not JSON
-                }
-            }
+
+            return raw.map(j => ({
+                label: j.cr9e8_name,
+                date: j.cr9e8_date_de_fin_actualisee
+                    ? new Date(j.cr9e8_date_de_fin_actualisee)
+                        .toLocaleDateString("fr-FR")
+                    : undefined,
+                isLivrable: j.cre69_livrable === true,
+                notes: j.cre69_notes ?? undefined
+            }));
+        } catch {
+            return null;
         }
-        return null;
     }
 
-    toggleTooltip = (guid: string, item?: Prestation) => {
-        const closing = this.state.tooltipGuid === guid;
-        if (closing) {
-            this.setState({ tooltipGuid: null, tooltipData: null }, () => {
-                if (this.props.onAction) this.props.onAction({ type: 'showTooltip', guid, data: null });
-            });
-            return;
-        }
-
-        const parsed = this.parseJalons(item);
-        this.setState({ tooltipGuid: guid, tooltipData: parsed }, () => {
-            if (this.props.onAction) this.props.onAction({ type: 'showTooltip', guid, data: parsed ?? null });
-        });
-    };
 
     componentDidUpdate(prevProps: ITableauProps) {
         if (prevProps.dataJson !== this.props.dataJson) {
@@ -192,7 +202,19 @@ export class TableauComponent extends React.Component<ITableauProps, TableauStat
                 this.setState({ favorites: parsed }, () => this.saveFavorites(this.state.favorites));
             }
         }
+
+        
+        if (prevProps.JalonsLivrables !==this.props.JalonsLivrables) {
+            this.setState({
+                tooltipData: this.parseJalonsLivrables(
+                    this.props.JalonsLivrables
+                )
+            });
+        }
+
     }
+
+
 
     parseData(dataJson: string): Prestation[] {
         try {
@@ -205,6 +227,7 @@ export class TableauComponent extends React.Component<ITableauProps, TableauStat
         }
         return [];
     }
+
 
     parseFavoritesProp(favJson?: string): string[] {
         if (!favJson) return [];
@@ -253,17 +276,22 @@ export class TableauComponent extends React.Component<ITableauProps, TableauStat
         }
     }
 
-    toggleFavorite(guid: string) {
-        this.setState(prev => {
-            const isFav = prev.favorites.includes(guid);
-            const next = isFav ? prev.favorites.filter(g => g !== guid) : [...prev.favorites, guid];
-            return { favorites: next };
-        }, () => {
-            this.saveFavorites(this.state.favorites);
-            if (this.props.onFavoritesChange) this.props.onFavoritesChange(this.state.favorites);
-            if (this.props.onAction) this.props.onAction({ type: 'favorite', guid, favorite: this.isFavorite(guid) });
+    toggleFavorite = (guid: string, isFavorite: boolean) => {
+        // ✅ Mise à jour UI immédiate
+        this.setState(prev => ({
+            favorites: isFavorite
+                ? prev.favorites.filter(g => g !== guid)
+                : [...prev.favorites, guid]
+        }));
+
+        // ✅ Émettre une intention métier
+        this.props.onAction?.({
+            type: "favorite",
+            guid,
+            favorite: !isFavorite
         });
-    }
+    };
+
 
     isFavorite(guid: string): boolean {
         return this.state.favorites.includes(guid);
@@ -279,8 +307,12 @@ export class TableauComponent extends React.Component<ITableauProps, TableauStat
 
         if (this.state.sortColumn) {
             filtered = [...filtered].sort((a, b) => {
-                const aVal = String(a[this.state.sortColumn as keyof Prestation] ?? '');
-                const bVal = String(b[this.state.sortColumn as keyof Prestation] ?? '');
+                
+                const key = this.state.sortColumn!;
+
+                const aVal = String(a[key] ?? "");
+                const bVal = String(b[key] ?? "");
+
                 return this.state.sortDirection === 'asc'
                     ? aVal.localeCompare(bVal)
                     : bVal.localeCompare(aVal);
@@ -307,6 +339,82 @@ export class TableauComponent extends React.Component<ITableauProps, TableauStat
     getUniqueValues(field: keyof Prestation): string[] {
         return Array.from(new Set(this.state.data.map(item => item[field]))).filter(Boolean);
     }
+
+    
+    private hasJalonsLivrables(jalonsLivrablesJson?: string | null, jalonsLivrables?: string | null): boolean {
+        if (!jalonsLivrablesJson) return false;
+        
+        if(jalonsLivrables == "1") {
+            return true;
+        }
+
+            
+        try {
+            const parsed: unknown = JSON.parse(jalonsLivrablesJson);
+
+            return Array.isArray(parsed) && parsed.length > 0;
+        } catch {
+            return false;
+        }
+
+
+    }
+
+    private handleTooltipToggle = (
+        guid: string,
+        jalonsLivrablesJson?: string | null
+    ): void => {
+        // Si on clique sur le même élément → on ferme
+        if (this.state.tooltipGuid === guid) {
+            this.setState({
+                tooltipGuid: null,
+                tooltipData: null,
+            });
+            return;
+        }
+
+        // Sinon, on tente de parser les jalons/livrables
+        if (!jalonsLivrablesJson) {
+            this.setState({
+                tooltipGuid: null,
+                tooltipData: null,
+            });
+            return;
+        }
+
+        try {
+            const raw = JSON.parse(jalonsLivrablesJson) as JalonLivrableRaw[];
+
+            if (!Array.isArray(raw) || raw.length === 0) {
+                this.setState({
+                    tooltipGuid: null,
+                    tooltipData: null,
+                });
+                return;
+            }
+
+            const tooltipData: JalonLivrableUi[] = raw.map(j => ({
+                label: j.cr9e8_name,
+                date: j.cr9e8_date_de_fin_actualisee
+                    ? new Date(j.cr9e8_date_de_fin_actualisee).toLocaleDateString("fr-FR")
+                    : undefined,
+                isLivrable: j.cre69_livrable === true,
+                notes: j.cre69_notes ?? undefined,
+            }));
+
+            this.setState({
+                tooltipGuid: guid,
+                tooltipData,
+            });
+        } catch {
+            this.setState({
+                tooltipGuid: null,
+                tooltipData: null,
+            });
+        }
+    };
+
+
 
     render() {
         const filteredData = this.getFilteredData();
@@ -384,39 +492,70 @@ export class TableauComponent extends React.Component<ITableauProps, TableauStat
                                 <td className="tableau-cell" colSpan={9}>Aucun élément à afficher.</td>
                             </tr>
                         ) : paginatedData.map(item => (
-                            <tr key={item.Guid} className="tableau-row">
+                            <tr key={item.Guid} className="tableau-row" >
                                 <td className="tableau-cell">
                                     <div className="tableau-etat-row">
-                                        {getEtatIcon(item.libEtat)}
-                                        <span className="tableau-etat-text">{item.libEtat}</span>
                                         <button
                                             className={`tableau-fav-button ${this.isFavorite(item.Guid) ? 'favorited' : ''}`}
-                                            onClick={() => this.toggleFavorite(item.Guid)}
+                                            onClick={() => this.handleProjectFavorisClick(item.Guid,item.idPrestation,item.libPrestation)}
                                             aria-pressed={this.isFavorite(item.Guid)}
                                             aria-label={this.isFavorite(item.Guid) ? 'Retirer des favoris' : 'Ajouter aux favoris'}
                                         >
                                             {this.isFavorite(item.Guid) ? '★' : '☆'}
                                         </button>
+                                        <span className="tableau-etat-text">{item.libEtat}</span>
+                                        {getEtatIcon(item.libEtat)}
+        
                                     </div>
                                 </td>
                                 <td className="tableau-cell">{item.libSousDomaine}</td>
                                 <td className="tableau-cell tableau-bold">
                                     <div className="tableau-cell-title-wrap">
-                                        {item.JalonsLivrables === '1' ? (
-                                            <span className="tableau-title-yellow" onClick={() => this.toggleTooltip(item.Guid, item)}>{item.libPrestation}</span>
-                                        ) : (
-                                            <span>{item.libPrestation}</span>
-                                        )}
+                                        
+                                            {this.hasJalonsLivrables(item.JalonsLivrables, item.JalonsLivrables) ? (
+                                                <span
+                                                    className="tableau-title-yellow"
+                                                    role="button"
+                                                    tabIndex={0}
+                                                    onClick={() =>
+                                                        this.handleTooltipToggle(
+                                                            item.Guid,
+                                                            item.JalonsLivrables
+                                                        )
+                                                    }
+                                                    aria-label="Voir les jalons et livrables"
+                                                >
+                                                    {item.libPrestation}
+                                                </span>
+                                            ) : (
+                                                <span>{item.libPrestation}</span>
+                                            )}
+
+
                                         {this.state.tooltipGuid === item.Guid && (
                                             <div className="tableau-tooltip">
                                                 {this.state.tooltipData && this.state.tooltipData.length > 0 ? (
-                                                    <table className="tableau-tooltip-table">
+                                                <table className="tableau-tooltip-table">
                                                         <thead>
-                                                            <tr><th>Jalon / Livrable</th><th>Date</th></tr>
+                                                            <tr>
+                                                                <th>Jalon / Livrable</th>
+                                                                <th>Date</th>
+                                                            </tr>
                                                         </thead>
                                                         <tbody>
-                                                            {this.state.tooltipData.map((t, idx) => (
-                                                                <tr key={idx}><td>{t.Name}</td><td>{t.desc}</td></tr>
+                                                            {this.state.tooltipData.map((j, idx) => (
+                                                                <tr key={idx}>
+                                                                    <td>
+                                                                        {j.isLivrable ? "📦 " : "📍 "}
+                                                                        {j.label}
+                                                                        {j.notes && (
+                                                                            <div className="tooltip-notes">
+                                                                                {j.notes}
+                                                                            </div>
+                                                                        )}
+                                                                    </td>
+                                                                    <td>{j.date ?? "-"}</td>
+                                                                </tr>
                                                             ))}
                                                         </tbody>
                                                     </table>
@@ -433,12 +572,13 @@ export class TableauComponent extends React.Component<ITableauProps, TableauStat
                                 <td className="tableau-cell">{getMeteoIcon(item.Etat_Meteo)}</td>
                                 
                                 <td className="tableau-cell">
-                                    <button className="tableau-icon-button" onClick={() => this.handleNavigate(item.Guid)}>
+                                    <button className="tableau-icon-button" 
+                                    onClick={() => this.handleProjectClick(item.Guid, item.idPrestation, item.libPrestation)}>
                                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <path d="M6 12H18M18 12L13 7M18 12L13 17" stroke="#000000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                         </svg>
                                     </button>
-                                </td>
+                                </td>  
                             </tr>
                         ))}
                     </tbody>

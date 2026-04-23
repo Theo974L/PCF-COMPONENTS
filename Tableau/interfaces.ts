@@ -13,9 +13,24 @@ export interface Prestation {
     refPrestation: string;
 }
 
+
+
+
 export interface ITableauProps {
     dataJson: string;
+    nbItems?: number;
+    JalonsLivrables?: string;
     onSelectGuid: (guid: string) => void;
+    onProjectSelect?: (payload: {
+            guid: string;
+            idPrestation: string;
+            libPrestation: string;
+    }) => void;
+    onProjectFavorisToggle?: (payload: {
+        guid: string;        
+        idPrestation: string;
+        libPrestation: string;
+    }) => void;
     onFavoritesChange?: (favorites: string[]) => void;
     favoritesDataJson?: string;
     onAction?: (action: { type: string; guid?: string; favorite?: boolean; data?: unknown }) => void;
