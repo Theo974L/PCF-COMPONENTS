@@ -149,7 +149,7 @@ export class TableauComponent extends React.Component<ITableauProps, TableauStat
             tooltipGuid: null,
             tooltipData:
                 this.parseJalonsLivrables(
-                    props.JalonsLivrables
+                    props.jalonsLivrables
                 )
 
         };
@@ -203,10 +203,10 @@ export class TableauComponent extends React.Component<ITableauProps, TableauStat
             });
         }
         
-        if (prevProps.JalonsLivrables !==this.props.JalonsLivrables) {
+        if (prevProps.jalonsLivrables !==this.props.jalonsLivrables) {
             this.setState({
                 tooltipData: this.parseJalonsLivrables(
-                    this.props.JalonsLivrables
+                    this.props.jalonsLivrables
                 )
             });
         }
@@ -474,7 +474,7 @@ export class TableauComponent extends React.Component<ITableauProps, TableauStat
                                 <td className="tableau-cell tableau-bold">
                                     <div className="tableau-cell-title-wrap">
                                         
-                                            {this.hasJalonsLivrables(item.JalonsLivrables, item.JalonsLivrables) ? (
+                                            {this.hasJalonsLivrables(item.jalonsLivrables, item.jalonsLivrables) ? (
                                                 <span
                                                     className="tableau-title-yellow"
                                                     role="button"
@@ -482,7 +482,7 @@ export class TableauComponent extends React.Component<ITableauProps, TableauStat
                                                     onClick={() =>
                                                         this.handleTooltipToggle(
                                                             item.Guid,
-                                                            item.JalonsLivrables
+                                                            item.jalonsLivrables
                                                         )
                                                     }
                                                     aria-label="Voir les jalons et livrables"

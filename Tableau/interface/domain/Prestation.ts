@@ -13,5 +13,5 @@ export interface Prestation {
 
     refPrestation: string;
     Etat_Meteo: string;
-    JalonsLivrables: string;
+    jalonsLivrables: string;
 }

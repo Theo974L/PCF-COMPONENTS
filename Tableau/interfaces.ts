@@ -1,7 +1,7 @@
 export interface Prestation {
     Etat_Meteo: string;
     Guid: string;
-    JalonsLivrables: string;
+    jalonsLivrables: string;
     Name: string;
     idPrestation: string;
     libClient: string;
@@ -19,7 +19,7 @@ export interface Prestation {
 export interface ITableauProps {
     dataJson: string;
     nbItems?: number;
-    JalonsLivrables?: string;
+    jalonsLivrables?: string;
     onSelectGuid: (guid: string) => void;
     onProjectSelect?: (payload: {
             guid: string;
