@@ -119,9 +119,17 @@ export class TableauComponent extends React.Component<ITableauProps, TableauStat
         this.props.onProjectSelect?.({ guid, idPrestation, libPrestation });
     };
 
-    private handleProjectFavorisClick = (guid: string, idPrestation: string, libPrestation: string) => {
-        // ✅ React déclenche UNE intentions
-        this.props.onProjectFavorisToggle?.({ guid, idPrestation, libPrestation });
+    
+    private handleProjectFavorisClick = (
+        guid: string,
+        idPrestation: string,
+        libPrestation: string
+    ) => {
+        this.props.onProjectFavorisToggle?.({
+            guid,
+            idPrestation,
+            libPrestation
+        });
     };
 
 
@@ -137,7 +145,7 @@ export class TableauComponent extends React.Component<ITableauProps, TableauStat
             sortDirection: 'asc',
             currentPage: 0,
             pageSize: props.nbItems ?? 5,
-            favorites: props.favoritesDataJson ? this.parseFavoritesProp(props.favoritesDataJson) : this.loadFavorites(),
+            favorites: props.favoritesDataJson ? this.parseFavoritesProp(props.favoritesDataJson) : [],
             tooltipGuid: null,
             tooltipData:
                 this.parseJalonsLivrables(
@@ -194,15 +202,6 @@ export class TableauComponent extends React.Component<ITableauProps, TableauStat
                 currentPage: 0
             });
         }
-
-        if (prevProps.favoritesDataJson !== this.props.favoritesDataJson) {
-            const parsed = this.parseFavoritesProp(this.props.favoritesDataJson);
-            const same = parsed.length === this.state.favorites.length && parsed.every(f => this.state.favorites.includes(f));
-            if (!same) {
-                this.setState({ favorites: parsed }, () => this.saveFavorites(this.state.favorites));
-            }
-        }
-
         
         if (prevProps.JalonsLivrables !==this.props.JalonsLivrables) {
             this.setState({
@@ -214,6 +213,10 @@ export class TableauComponent extends React.Component<ITableauProps, TableauStat
 
     }
 
+    
+    isFavorite(guid: string): boolean {
+        return this.state.favorites.includes(guid);
+    }
 
 
     parseData(dataJson: string): Prestation[] {
@@ -254,47 +257,6 @@ export class TableauComponent extends React.Component<ITableauProps, TableauStat
             // ignore
         }
         return [];
-    }
-
-    loadFavorites(): string[] {
-        try {
-            const raw = window.localStorage.getItem('tableau-favorites');
-            if (!raw) return [];
-            const parsed: unknown = JSON.parse(raw);
-            if (Array.isArray(parsed) && parsed.every(p => typeof p === 'string')) return parsed;
-        } catch {
-            // ignore
-        }
-        return [];
-    }
-
-    saveFavorites(favorites: string[]) {
-        try {
-            window.localStorage.setItem('tableau-favorites', JSON.stringify(favorites));
-        } catch {
-            // ignore
-        }
-    }
-
-    toggleFavorite = (guid: string, isFavorite: boolean) => {
-        // ✅ Mise à jour UI immédiate
-        this.setState(prev => ({
-            favorites: isFavorite
-                ? prev.favorites.filter(g => g !== guid)
-                : [...prev.favorites, guid]
-        }));
-
-        // ✅ Émettre une intention métier
-        this.props.onAction?.({
-            type: "favorite",
-            guid,
-            favorite: !isFavorite
-        });
-    };
-
-
-    isFavorite(guid: string): boolean {
-        return this.state.favorites.includes(guid);
     }
 
     getFilteredData(): Prestation[] {

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <manifest>
-  <control namespace="MAESTRO" constructor="Tableau" version="0.1.01" display-name-key="Tableau" description-key="Tableau description" control-type="virtual" >
+  <control namespace="MAESTRO" constructor="Tableau" version="0.1.06" display-name-key="Tableau" description-key="Tableau description" control-type="virtual" >
     <!--external-service-usage node declares whether this 3rd party PCF control is using external service or not, if yes, this control will be considered as premium and please also add the external domain it is using.
     If it is not using any external service, please set the enabled="false" and DO NOT add any domain below. The "enabled" will be false by default.
     Example1:
@@ -18,9 +18,9 @@
       -->
     </external-service-usage>
     <!-- property node identifies a specific, configurable piece of data that the control expects from CDS -->
-    <property name="dataJson" display-name-key="Données JSON" description-key="Chaîne JSON contenant le tableau des prestations" of-type="Multiple" usage="input" required="true" />
-    <property name="favoritesDataJson" display-name-key="Données favoris JSON" description-key="Chaîne JSON contenant les favoris (GUID ou objets)" of-type="Multiple" usage="input" required="false" />
-    <property name="jalonsLivrables" display-name-key="Nombre items jalonsLivrables" description-key="JalonsLivrables" of-type="Multiple" usage="input" required="false" />
+    <property  name="dataJson" display-name-key="Données JSON" description-key="Chaîne JSON contenant le tableau des prestations" of-type="Multiple" usage="input" required="true" />
+    <property  name="favoritesDataJson" display-name-key="Données favoris JSON" description-key="Chaîne JSON contenant les favoris (GUID ou objets)" of-type="Multiple" usage="input" required="false" />
+    <property  name="jalonsLivrables" display-name-key="Nombre items jalonsLivrables" description-key="JalonsLivrables" of-type="Multiple" usage="input" required="false" />
     
     <property name="nbItems" display-name-key="Nombre d items" description-key="Item" of-type="Whole.None" usage="input" required="false" />
 
@@ -44,7 +44,28 @@
     <event name="OnProjectSelect" display-name-key="OnSelect projet" description-key="Expression Power Fx executee lors du clic sur un projet" />
     <event name="OnProjectFavorisToggle" display-name-key="OnFavorisToggle projet" description-key="Expression Power Fx executee lors du clic sur un projet favori" />
 
+
+    <property
+    name="favIdPrestation"
+    display-name-key="FavIdPrestation"
+    description-key="IdPrestation sélectionnée pour les favoris"
+    of-type="SingleLine.Text"
+    usage="bound" />
+
+  <property
+      name="favLibPrestation"
+      display-name-key="FavLibPrestation"
+      description-key="Libellé de la prestation sélectionnée pour les favoris"
+      of-type="SingleLine.Text"
+      usage="bound" />
     
+  <property
+      name="favAction"
+      display-name-key="FavAction"
+      description-key="Action favoris déclenchée par le PCF"
+      of-type="SingleLine.Text"
+      usage="bound" />
+
 
     <!--
       Property node's of-type attribute can be of-type-group attribute.

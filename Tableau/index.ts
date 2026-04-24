@@ -37,6 +37,7 @@ export class Tableau implements ComponentFramework.ReactControl<IInputs, IOutput
         notifyOutputChanged: () => void
     ): void {
         this.notifyOutputChanged = notifyOutputChanged;
+        this.context = _context;
     }
 
     private projectSelectEvent(): void {
@@ -94,24 +95,14 @@ public updateView(
 
                 this.notifyOutputChanged();
             },
-            onProjectFavorisToggle: (payload: { guid: string; idPrestation: string; libPrestation: string  }) => {
-                
-                const { guid, idPrestation, libPrestation } = payload;
-                
-                // mise a jour
-                this.selectedGuid = guid;
-                this.selectedIdPrestation = idPrestation;
-                this.selectedLibPrestation = libPrestation;
-                
-                // on notify powerapps
-                this.notifyOutputChanged();
+            onProjectFavorisToggle: (payload) => {
+               this.setStringParam(this.context?.parameters.favIdPrestation, payload.idPrestation);
+                this.setStringParam(this.context?.parameters.favLibPrestation, payload.libPrestation);
+                this.setStringParam(this.context?.parameters.favAction, "TOGGLE");
 
-                // on declenche l'event pour le wrapper PCF
-                context?.events?.OnProjectFavorisToggle?.({
-                    guid: this.selectedGuid,
-                    idPrestation: this.selectedIdPrestation,
-                    libPrestation: this.selectedLibPrestation
-                });                
+
+                this.notifyOutputChanged();
+                this.context?.events?.OnSelect?.();
             },
             onFavoritesChange: (favorites: string[]) => {
                 this.favoritesJson = this.safeJson(favorites);
@@ -164,6 +155,26 @@ public updateView(
             selectedLibPrestation: this.selectedLibPrestation
         };
     }
+
+    
+    private setStringParam(
+        param: unknown,
+        value?: string
+    ): void {
+        if (
+            param &&
+            typeof param === "object" &&
+            "setValue" in param &&
+            typeof (param as { setValue: unknown }).setValue === "function" &&
+            value !== undefined
+        ) {
+            (param as { setValue: (v: string) => void }).setValue(value);
+        }
+    }
+
+
+
+
     /**
      * Called when the control is to be removed from the DOM tree. Controls should use this call for cleanup.
      * i.e. cancelling any pending remote calls, removing listeners, etc.
