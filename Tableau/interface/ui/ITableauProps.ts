@@ -8,8 +8,6 @@ export interface ITableauProps {
     jalonsLivrables?: string;
     dataJson: string;
     favoritesDataJson?: string;
-
-    refreshKey?: string;
     /**
      * JSON des favoris persistés.
      */
@@ -56,22 +54,3 @@ export interface ITableauProps {
     }) => void;
 }
 
-
-// // src/interfaces/ui/ITableauProps.ts
-// export interface ITableauProps {
-//     dataJson: string;
-//     favoritesDataJson?: string;
-//     JalonsLivrables?: string;
-//     nbItems?: number;
-
-//     onSelectGuid: (guid: string) => void;
-//     onProjectSelect?: (projectGuid: string) => void;
-//     onFavoritesChange?: (favorites: string[]) => void;
-
-//     onAction?: (action: {
-//         type: string;
-//         guid?: string;
-//         favorite?: boolean;
-//         data?: unknown;
-//     }) => void;
-// }

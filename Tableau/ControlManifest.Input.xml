@@ -17,44 +17,20 @@
       -->
     </external-service-usage>
     <!-- property node identifies a specific, configurable piece of data that the control expects from CDS -->
-    <property  name="dataJson" display-name-key="Données JSON" description-key="Chaîne JSON contenant le tableau des prestations" of-type="Multiple" usage="input" required="true" />
-    <property  name="favoritesDataJson" display-name-key="Données favoris JSON" description-key="Chaîne JSON contenant les favoris (GUID ou objets)" of-type="Multiple" usage="input" required="false" />
-    <property  name="jalonsLivrables" display-name-key="Nombre items jalonsLivrables" description-key="JalonsLivrables" of-type="Multiple" usage="input" required="false" />
-    
-    <property name="nbItems" display-name-key="Nombre d items" description-key="Item" of-type="Whole.None" usage="input" required="false" />
+   
+    <property name="notificationType" display-name-key="Type de notification" description-key="Type de la notification : success, info, warning, error, alert" of-type="SingleLine.Text" usage="input" required="false" />
+    <property name="notificationTitle" display-name-key="Titre notification" description-key="Titre affiché avant le message" of-type="SingleLine.Text" usage="input" required="false" />
+    <property name="notificationIcon" display-name-key="Icône notification" description-key="Emoji ou texte affiché en icône de notification" of-type="SingleLine.Text" usage="input" required="false" />
+    <property name="notificationMessage" display-name-key="Message notification" description-key="Message affiché par Toastify" of-type="SingleLine.Text" usage="input" required="false" />
+    <property name="notificationPosition" display-name-key="Position notification" description-key="Position de la notification : top-right, top-left, bottom-right, bottom-left, top-center, bottom-center" of-type="SingleLine.Text" usage="input" required="false" />
+    <property name="notificationTheme" display-name-key="Theme notification" description-key="Theme de la notification : light, dark, colored" of-type="SingleLine.Text" usage="input" required="false" />
+    <property name="notificationCloseOnClick" display-name-key="Fermer au clic" description-key="True/false : fermer la notification au clic" of-type="SingleLine.Text" usage="input" required="false" />
+    <property name="notificationPauseOnHover" display-name-key="Pause au survol" description-key="True/false : arrêter le compte à rebours au survol" of-type="SingleLine.Text" usage="input" required="false" />
+    <property name="notificationHideProgressBar" display-name-key="Masquer barre de progression" description-key="True/false : cacher la barre de progression" of-type="SingleLine.Text" usage="input" required="false" />
+    <property name="notificationActionUrl" display-name-key="URL action" description-key="URL à ouvrir au clic sur la notification" of-type="SingleLine.Text" usage="input" required="false" />
+    <property name="notificationTrigger" display-name-key="Déclencheur notification" description-key="Valeur unique permettant de déclencher la notification" of-type="SingleLine.Text" usage="input" required="false" />
+    <property name="notificationAutoClose" display-name-key="Durée auto close" description-key="Durée en millisecondes avant fermeture automatique" of-type="Whole.None" usage="input" required="false" />
 
-    <property name="favIdPrestation" display-name-key="favIdPrestation"
-              description-key="favIdPrestation"
-              of-type="SingleLine.Text"
-              usage="output" required="false" />
-
-    <property name="favLibPrestation" display-name-key="favLibPrestation"
-              description-key="favLibPrestation"
-              of-type="SingleLine.Text"
-              usage="output" required="false" />
-
-    <property name="favAction" display-name-key="favAction"
-              description-key="favAction"
-              of-type="SingleLine.Text"
-              usage="output" required="false" />
-
-
-    <property name="actionJson" display-name-key="Action JSON" description-key="JSON décrivant la dernière action utilisateur (refresh|favorite|navigate|showTooltip)" of-type="SingleLine.Text" usage="output" required="false" />
-    
-    <property name="selectedIdPrestation" display-name-key="Selected ID Prestation" description-key="ID de la prestation sélectionnée" of-type="SingleLine.Text" usage="output" required="false" />
-    <property name="selectedGuid" display-name-key="Selected Guid" description-key="Selected Guid" of-type="SingleLine.Text" usage="output" />
-    <property name="selectedLibPrestation" display-name-key="Selected Lib Prestation" description-key="Libellé de la prestation sélectionnée" of-type="SingleLine.Text" usage="output" required="false" />
-
-    <property name="favoritesJson" display-name-key="Favoris JSON" description-key="JSON des GUID favoris (sortie)" of-type="SingleLine.Text" usage="output" required="false" />
-
-    <property
-        name="refreshKey"
-        display-name-key="refreshKey"
-        of-type="SingleLine.Text"
-        usage="input"
-    />
-
-    <event name="OnProjectSelect" display-name-key="OnSelect projet" description-key="Expression Power Fx executee lors du clic sur un projet" />
     <event 
     name="OnProjectFavorisToggle" 
     display-name-key="OnFavorisToggle projet" 
