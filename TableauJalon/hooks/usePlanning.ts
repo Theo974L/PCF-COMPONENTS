@@ -1,70 +1,70 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { JalonsRow } from "../models/JalonsRow";
 import { DataverseService } from "../services/DataverseService";
 
 export const usePlanning = (
   initialRows: JalonsRow[],
-  service: DataverseService
+  service: DataverseService,
+  onDeleteRequest: (id: string) => void,
+  onCommentSave: (id: string, text: string) => void,
 ) => {
-
   const [rows, setRows] = useState<JalonsRow[]>([]);
 
-  // ✅ init UNE seule fois ou quand dataset change
   useEffect(() => {
     setRows(initialRows);
   }, [initialRows]);
 
-  const updateField = <K extends keyof JalonsRow>(
-    id: string,
-    field: K,
-    value: JalonsRow[K]
-  ) => {
-    setRows(prev =>
-      prev.map(r =>
-        r.id === id
-          ? { ...r, value, isDirty: true }
-          : r
-      )
-    );
-  };
+  const updateField = useCallback(
+    <K extends keyof JalonsRow>(id: string, field: K, value: JalonsRow[K]) => {
+      setRows(prev =>
+        prev.map(r => (r.id === id ? { ...r, [field]: value, isDirty: true } : r))
+      );
+    },
+    []
+  );
 
-  const toggleImmediate = async (
-    id: string,
-    field: "planning" | "livrable",
-    value: boolean
-  ): Promise<void> => {
+  const saveRow = useCallback(
+    async (id: string) => {
+      setRows(prev => {
+        const row = prev.find(r => r.id === id);
+        if (row?.isDirty) {
+          service.updateRow(row).catch(console.error);
+          return prev.map(r => (r.id === id ? { ...r, isDirty: false } : r));
+        }
+        return prev;
+      });
+    },
+    [service]
+  );
 
-    setRows(prev =>
-      prev.map(r =>
-        r.id === id
-          ? { ...r, value }
-          : r
-      )
-    );
+  const toggleImmediate = useCallback(
+    async (id: string, field: "planning" | "livrable", value: boolean) => {
+      setRows(prev =>
+        prev.map(r => (r.id === id ? { ...r, [field]: value } : r))
+      );
+      const apiField = field === "planning" ? "cre69_planning" : "cre69_livrable";
+      await service.updateField(id, { [apiField]: value });
+    },
+    [service]
+  );
 
-    await service.updateToggle(
-      id,
-      field === "planning" ? "cre69_planning" : "cre69_livrable",
-      value
-    );
-  };
+  const saveComment = useCallback(
+    async (id: string, text: string) => {
+      setRows(prev =>
+        prev.map(r => (r.id === id ? { ...r, commentaire: text } : r))
+      );
+      await service.updateComment(id, text);
+      onCommentSave(id, text);
+    },
+    [service, onCommentSave]
+  );
 
-  const save = async (): Promise<void> => {
-    const dirtyRows = rows.filter(r => r.isDirty);
+  const requestDelete = useCallback(
+    (id: string) => {
+      onDeleteRequest(id);
+    },
+    [onDeleteRequest]
+  );
 
-    await Promise.all(
-      dirtyRows.map(r => service.updateRow(r))
-    );
-
-    setRows(prev =>
-      prev.map(r => ({ ...r, isDirty: false }))
-    );
-  };
-
-  return {
-    rows,
-    updateField,
-    toggleImmediate,
-    save
-  };
+  return { rows, updateField, saveRow, toggleImmediate, saveComment, requestDelete };
 };
