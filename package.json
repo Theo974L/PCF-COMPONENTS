@@ -13,20 +13,28 @@
     "refreshTypes": "pcf-scripts refreshTypes"
   },
   "dependencies": {
+    "@tailwindcss/cli": "^4.3.1",
     "react": "^19.2.7",
     "react-dom": "^19.2.7"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.1",
+    "@fullhuman/postcss-purgecss": "^8.0.0",
     "@microsoft/eslint-plugin-power-apps": "^0.2.51",
     "@types/node": "^18.19.86",
     "@types/powerapps-component-framework": "^1.3.18",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
+    "autoprefixer": "^9.8.6",
     "eslint-plugin-promise": "^7.1.0",
     "globals": "^15.15.0",
+    "gulp-postcss": "^10.0.0",
     "pcf-scripts": "^1",
     "pcf-start": "^1",
+    "postcss": "^8.5.15",
+    "postcss-cli": "^11.0.1",
+    "postcss-import": "^16.1.1",
+    "tailwindcss": "^1.9.6",
     "typescript": "^5.8.3",
     "typescript-eslint": "8.44.0"
   }

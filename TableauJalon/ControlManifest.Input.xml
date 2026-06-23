@@ -31,6 +31,13 @@
     of-type="SingleLine.Text"
     usage="input" />
 
+    <property 
+    name="PersonneDataJson"
+    display-name-key="Personne Data"
+    description-key="Personne Data JSON"
+    of-type="SingleLine.Text"
+    usage="input" />
+
 
     <!--
       Property node's of-type attribute can be of-type-group attribute.

@@ -9,7 +9,6 @@ import { JalonsApi } from "./models/JalonsApi";
 import { JalonsRow } from "./models/JalonsRow";
 import { usePlanning } from "./hooks/usePlanning";
 
-
 // ✅ typage dataset record PCF
 type PCFRecord = ComponentFramework.PropertyHelper.DataSetApi.EntityRecord;
 
