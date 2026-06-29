@@ -3,7 +3,7 @@ import { IInputs, IOutputs } from "./generated/ManifestTypes";
 import "../styles.css";
 import { NotifyComponent } from "./Notify";
 
-export class Tableau implements ComponentFramework.ReactControl<IInputs, IOutputs> {
+export class Notify implements ComponentFramework.ReactControl<IInputs, IOutputs> {
 
     constructor() {
         // Empty
