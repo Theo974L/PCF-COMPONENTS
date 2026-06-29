@@ -14,6 +14,21 @@ npm run clean
 pac pcf push --publisher-prefix dev
 ```
 
+
+Si l’environnement Power Platform n’est pas encore configuré :
+
+```bash
+pac auth login
+pac auth list
+pac auth create --environment <Link>
+pac org who
+```
+Remplacer <Link> par l’URL de votre environnement Power Platform.
+<Link> est trouvable dans les parametres de l'environnement PowerApps (A coté du nom de l'environnement) -> Session détails -> Instance url
+![alt text](image-1.png)
+![alt text](image-2.png)
+![alt text](image.png)
+
 ## Objectif
 Ce composant PCF affiche des notifications dans Power Apps en utilisant `react-toastify`. Il permet de déclencher des messages visuels personnalisés directement depuis des propriétés de l’application.
 
