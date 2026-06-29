@@ -25,9 +25,12 @@ pac org who
 ```
 Remplacer <Link> par l’URL de votre environnement Power Platform.
 <Link> est trouvable dans les parametres de l'environnement PowerApps (A coté du nom de l'environnement) -> Session détails -> Instance url
+
+```md
 ![alt text](image-1.png)
 ![alt text](image-2.png)
 ![alt text](image.png)
+```
 
 ## Objectif
 Ce composant PCF affiche des notifications dans Power Apps en utilisant `react-toastify`. Il permet de déclencher des messages visuels personnalisés directement depuis des propriétés de l’application.
