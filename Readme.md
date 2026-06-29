@@ -24,11 +24,16 @@ pac auth create --environment <Link>
 pac org who
 ```
 Remplacer <Link> par l’URL de votre environnement Power Platform.
-<Link> est trouvable dans les parametres de l'environnement PowerApps (A coté du nom de l'environnement) -> Session détails -> Instance url
-
+<Link> est trouvable dans les parametres de l'environnement PowerApps (A coté du nom de l'environnement)
 
 ![alt text](image-1.png)
+
+Session détails
+
 ![alt text](image-2.png)
+
+Instance url
+
 ![alt text](image.png)
 
 
