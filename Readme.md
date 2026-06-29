@@ -1,111 +1,176 @@
-# PCF-COMPONENTS
+# Composant PCF Toastify Notifications
 
-Voici le dépôt contenant des composants PCF (PowerApps Component Framework) utilisés dans Power Apps.
-
-## Présentation
-
-Ce projet contient notamment le composant `Tableau`, un composant PCF qui affiche et gère un tableau de données dans une application Model-driven ou Canvas.
-
-## Prérequis
-
-- Node.js (>=14 recommandé)
-- npm ou yarn
-- (Optionnel) Power Platform CLI (`pac`) si vous utilisez les commandes de packaging/déploiement
-
-## Installation
-
-1. Installer les dépendances :
-
-```
+## Mise en place 
+Installer les biblioteques
+```bash
 npm install
 ```
+Installer PAC (Power Platform Tools) `Disponible dans les extensions visual studio`
 
-2. (Optionnel) Installer Power Platform CLI :
-
-```
-pac install latest
-```
-
-## Démarrage (startup du composant)
-
-Pour lancer le développement local et observer le composant :
-
-- Si le projet fournit un script de développement :
-
-```
-npm run start
-```
-
-- Sinon, compiler en mode watch :
-
-```
-npm run build -- --watch
-```
-
-- Pour tester dans Power Apps avec le CLI Power Platform :
-
-```
-pac pcf push --publisher-prefix <prefix>
-```
-
-Remplacez `<prefix>` par le préfixe de votre éditeur/publisher. Ces commandes peuvent varier selon la configuration du projet (vérifier les scripts du `package.json`).
-
-## Fonctionnement du composant
-
-- Initialisation :
-	- Le point d'entrée est `index.ts` qui instancie le contrôle PCF et lie le `ControlManifest.Input.xml`.
-	- Les propriétés configurées dans `ControlManifest.Input.xml` (propriétés de dataset, propriétés de champ) sont exposées au composant.
-
-- Rendu :
-	- Le composant principal est `Tableau.tsx` et utilise `interfaces.ts` pour typer les données entrantes.
-	- Le style est géré par `styles.css` et le `tailwind.config.js` si Tailwind est utilisé.
-
-- Événements et interaction :
-	- Les événements (sélection, tri, édition) sont définis dans les interfaces situées sous `interface/` (ex. `ITableauEvents.ts`).
-	- Le composant déclenche les callbacks fournis par la plateforme pour notifier les changements de données.
-
-- Persistances / actions :
-	- Les actions applicatives (CRUD, filtrage) sont gérées côté composant, puis remontées à la plateforme via les APIs PCF ou services côté serveur selon l'implémentation.
-
-## Structure du projet (fichiers clés)
-
-- `ControlManifest.Input.xml` : définition des propriétés et paramètres du composant.
-- `index.ts` : point d'entrée du composant PCF.
-- `Tableau.tsx` : composant React/TS principal affichant le tableau.
-- `interfaces.ts` et `interface/` : types et contrats d'événements.
-- `styles.css` / `tailwind.config.js` : styles et configuration CSS.
-- `PCF_Composant.pcfproj` : projet MSBuild/packaging PCF.
-
-## Build & packaging
-
-Générer le bundle de production :
-
-```
+Nettoyer la solution puis la push
+```bash
 npm run build
+npm run clean
+pac pcf push --publisher-prefix dev
 ```
 
-Pour packager/déployer (ex. avec `pac`):
+## Objectif
+Ce composant PCF affiche des notifications dans Power Apps en utilisant `react-toastify`. Il permet de déclencher des messages visuels personnalisés directement depuis des propriétés de l’application.
 
+## Commandes principales
+- `npm install` : installe les dépendances
+- `npm run refreshTypes` : régénère les types PCF depuis le manifeste
+- `npm run build` : construit le contrôle
+- `npm run clean` : supprime les artefacts de build
+- `pac pcf push --publisher-prefix dev` : déploie le composant dans Power Apps
+
+## Présentation du contrôle
+Le contrôle est conçu pour être ajouté comme contrôle virtuel dans Power Apps Canvas. Il ne présente pas de rendu direct dans le formulaire, mais il écoute des propriétés de notification et affiche un toast lorsque la valeur de trigger est mise à jour.
+
+## Installation et initialisation
+1. Importer le composant PCF dans votre solution Power Apps.
+2. Ajouter le contrôle sur un écran ou un champ de type virtuel.
+3. Lier les propriétés de notification aux champs ou formules Power Fx de votre application.
+4. Mettre à jour `notificationTrigger` à chaque notification souhaitée.
+
+## Guide d’utilisation
+### 1. Paramétrer le contrôle dans Power Apps
+Associer chaque propriété du contrôle à la valeur souhaitée dans l’éditeur de propriétés.
+
+### 2. Déclencher une notification
+Le composant déclenche une notification uniquement lorsque la valeur de `notificationTrigger` change.
+
+- Utiliser une valeur différente pour chaque notification
+- Exemple : timestamp, compteur, GUID, ou combinaison de valeurs dynamiques
+
+### 3. Exemple de formule Power Fx
+```PowerFx
+Concatenate("toast-", Text(Now(), "yyyyMMddHHmmss"))
 ```
-pac pcf push --publisher-prefix <prefix>
-```
-ou
 
-```
-msbuild PCF_Composant.pcfproj /t:Build
+ou pour un bouton :
+```PowerFx
+Set(MyToastTrigger, "toast-" & Text(Now(), "yyyyMMddHHmmss"))
 ```
 
-## Développement
+### 4. Lier le trigger
+Dans les propriétés du contrôle, lier `notificationTrigger` à la variable `MyToastTrigger` ou à un champ Power Fx.
 
-- Lancer le watch pour itérations rapides : `npm run build -- --watch`.
-- Linter : `npm run lint` (si disponible).
+## Paramètres disponibles
+### `notificationType`
+- Valeurs : `success`, `info`, `warning`, `error`, `alert`
+- Comportement : `alert` est traité comme `error`
+- Valeur par défaut : `info`
 
-## Contribution
+### `notificationTitle`
+- Titre en gras affiché avant le message
+- Exemple : `Bravo !`, `Succès`, `Attention`
+- Valeur par défaut : vide
 
-Merci de créer une issue ou une PR pour toute amélioration. Respectez les règles de commit et les conventions TypeScript/ESLint du projet.
+### `notificationIcon`
+- Emoji ou petit texte affiché à gauche du titre
+- Exemple : `✅`, `⚠️`, `🔥`, `ℹ️`
+- Valeur par défaut : vide
 
-## Contact / Aide
+### `notificationMessage`
+- Texte principal de la notification
+- Exemple : `Sauvegarde effectuée avec succès.`
+- Valeur par défaut : `Notification sans message`
 
-Pour toute question, ajoutez une issue sur ce dépôt ou contactez l'auteur du projet.
+### `notificationPosition`
+- Positions supportées :
+  - `top-right`
+  - `top-left`
+  - `bottom-right`
+  - `bottom-left`
+  - `top-center`
+  - `bottom-center`
+- Positions françaises acceptées :
+  - `haut droite`
+  - `haut gauche`
+  - `bas droite`
+  - `bas gauche`
+  - `centre haut`
+  - `centre bas`
+- Valeur par défaut : `top-right`
 
+### `notificationTheme`
+- Valeurs : `colored`, `light`, `dark`
+- Valeur par défaut : `colored`
+
+### `notificationCloseOnClick`
+- Valeurs : `true`, `false`
+- Détermine si le toast se ferme au clic
+- Valeur par défaut : `true`
+
+### `notificationPauseOnHover`
+- Valeurs : `true`, `false`
+- Arrête le compte à rebours au survol
+- Valeur par défaut : `true`
+
+### `notificationHideProgressBar`
+- Valeurs : `true`, `false`
+- Cache la barre de progression si `true`
+- Valeur par défaut : `false`
+
+### `notificationActionUrl`
+- URL ouverte lorsqu’on clique sur la notification
+- Exemple : `https://example.com`
+- Valeur par défaut : vide
+
+### `notificationTrigger`
+- Valeur unique qui déclenche la notification
+- Doit changer à chaque notification souhaitée
+- Exemple : `toast-20260609-120305`
+
+### `notificationAutoClose`
+- Durée en millisecondes avant fermeture automatique
+- Exemple : `3000`, `4000`, `6000`
+- Valeur par défaut : `5000`
+
+## Configuration recommandée
+### Option 1 : notification de succès
+- `notificationType = "success"`
+- `notificationTitle = "✅ Succès"`
+- `notificationIcon = "✨"`
+- `notificationMessage = "Sauvegarde effectuée avec succès."`
+- `notificationPosition = "top-right"`
+- `notificationTheme = "colored"`
+- `notificationCloseOnClick = "true"`
+- `notificationPauseOnHover = "true"`
+- `notificationHideProgressBar = "false"`
+- `notificationActionUrl = ""`
+- `notificationTrigger = Concatenate("toast-", Text(Now(), "yyyyMMddHHmmss"))`
+- `notificationAutoClose = 4000`
+
+### Option 2 : alerte importante
+- `notificationType = "warning"`
+- `notificationTitle = "Attention"`
+- `notificationIcon = "⚠️"`
+- `notificationMessage = "Vérifiez les informations avant de continuer."`
+- `notificationPosition = "top-center"`
+- `notificationTheme = "dark"`
+- `notificationCloseOnClick = "true"`
+- `notificationPauseOnHover = "true"`
+- `notificationHideProgressBar = "false"`
+- `notificationActionUrl = "https://example.com/details"`
+- `notificationTrigger = Concatenate("toast-", Text(Now(), "yyyyMMddHHmmss"))`
+- `notificationAutoClose = 8000`
+
+## Bonnes pratiques
+- Mettre une valeur unique dans `notificationTrigger` à chaque notification
+- Ne pas réutiliser la même valeur si l’on veut relancer la notification
+- Préférer un message clair et court
+- Utiliser `notificationIcon` et `notificationTitle` pour rendre l’alerte plus visible
+- Utiliser `notificationActionUrl` uniquement pour des liens sûrs
+
+## Notes importantes
+- Si `notificationMessage` est vide, le composant affiche `Notification sans message`
+- Si `notificationActionUrl` est renseigné, cliquer sur la notification ouvre le lien dans un nouvel onglet
+- La notification ne s’affiche pas si `notificationTrigger` reste identique
+
+## Dépannage rapide
+- Si aucune notification n’apparaît, vérifier que `notificationTrigger` change bien
+- Si le message est vide, vérifier `notificationMessage`
+- Si la position n’est pas correcte, utiliser une valeur valide parmi la liste ci-dessus
 
